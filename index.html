@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 36px;
+      color: #333;
+    }
+    .game-container {
+      display: grid;
+      grid-template-columns: repeat(2, 100px);
+      grid-gap: 10px;
+    }
+    .button {
+      width: 100px;
+      height: 100px;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      transition: opacity 0.3s, transform 0.3s, filter 0.3s;
+    }
+    #red { background-color: red; }
+    #green { background-color: green; }
+    #blue { background-color: blue; }
+    #yellow { background-color: yellow; }
+    .disabled {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+    #level {
+      margin-top: 20px;
+      font-size: 24px;
+    }
+    #skip {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Memory Game</h1>
+  <div class="game-container">
+    <button id="red" class="button"></button>
+    <button id="green" class="button"></button>
+    <button id="blue" class="button"></button>
+    <button id="yellow" class="button"></button>
+  </div>
+  <div id="level">Level: 1</div>
+  <button id="skip">Skip Level</button>
+
+  <script>
+    const buttons = document.querySelectorAll('.button');
+    const levelDisplay = document.getElementById('level');
+    const skipButton = document.getElementById('skip');
+    let sequence = [];
+    let userSequence = [];
+    let level = 1;
+    let isUserTurn = false;
+
+    // Function to start the game
+    function startGame() {
+      sequence = [];
+      userSequence = [];
+      level = 1;
+      levelDisplay.textContent = `Level: ${level}`;
+      nextLevel();
+    }
+
+    // Function to proceed to the next level
+    function nextLevel() {
+      isUserTurn = false;
+      userSequence = [];
+      sequence.push(getRandomButton());
+      playSequence();
+    }
+
+    // Function to get a random button
+    function getRandomButton() {
+      const randomIndex = Math.floor(Math.random() * buttons.length);
+      return buttons[randomIndex].id;
+    }
+
+    // Function to play the sequence
+    function playSequence() {
+      let i = 0;
+      const interval = setInterval(() => {
+        highlightButton(sequence[i]);
+        i++;
+        if (i >= sequence.length) {
+          clearInterval(interval);
+          isUserTurn = true;
+        }
+      }, 1000);
+    }
+
+    // Function to highlight a button (computer's turn)
+    function highlightButton(buttonId) {
+      const button = document.getElementById(buttonId);
+      button.style.transform = 'scale(1.2)';
+      setTimeout(() => {
+        button.style.transform = 'scale(1)';
+      }, 500);
+    }
+
+    // Function to darken a button (user's turn)
+    function darkenButton(buttonId) {
+      const button = document.getElementById(buttonId);
+      button.style.filter = 'brightness(50%)';
+      setTimeout(() => {
+        button.style.filter = 'brightness(100%)';
+      }, 300);
+    }
+
+    // Function to handle user input
+    function handleUserInput(event) {
+      if (!isUserTurn) return;
+      const buttonId = event.target.id;
+      userSequence.push(buttonId);
+      darkenButton(buttonId);
+
+      if (userSequence[userSequence.length - 1] !== sequence[userSequence.length - 1]) {
+        alert(`Game Over! You reached level ${level}.`);
+        startGame();
+        return;
+      }
+
+      if (userSequence.length === sequence.length) {
+        level++;
+        levelDisplay.textContent = `Level: ${level}`;
+        setTimeout(nextLevel, 1000);
+      }
+    }
+
+    // Add event listeners to buttons
+    buttons.forEach(button => {
+      button.addEventListener('click', handleUserInput);
+    });
+
+    // Add event listener to skip button
+    skipButton.addEventListener('click', () => {
+      level++;
+      levelDisplay.textContent = `Level: ${level}`;
+      nextLevel();
+    });
+
+    // Start the game
+    startGame();
+  </script>
+</body>
+</html>
